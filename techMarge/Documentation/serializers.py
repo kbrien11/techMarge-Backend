@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
+from .models import Tool
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,3 +27,9 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         Token.objects.create(user=user)
         return user
+
+
+class ToolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tool
+        fields = ["type", "title", "description", "location", "docLink", "language"]
