@@ -10,6 +10,6 @@ class Tool(models.Model):
     type = models.CharField(default="", max_length=40)
     location = models.CharField(default="", max_length=40)
     title = models.CharField(default="", max_length=40)
-    description = models.CharField(default="", max_length=30)
+    description = models.CharField(default="")
     docLink = models.CharField(default="", max_length=100)
     language = models.CharField(default="", max_length=30)
