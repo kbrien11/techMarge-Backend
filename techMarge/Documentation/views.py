@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+from django.db.models import Q  # Create your views here.
 
 
 from django.contrib.auth.models import User
@@ -99,7 +99,13 @@ def fetchAllTools(request):
     if len(tools) > 0:
         tools_ser = ToolSerializer(tools, many=True)
         if tools_ser.data:
-            return Response({"data": tools_ser.data, "status": status.HTTP_200_OK})
+            return Response(
+                {
+                    "data": tools_ser.data,
+                    "status": status.HTTP_200_OK,
+                    "total_count": len(tools_ser.data),
+                }
+            )
         else:
             return Response(
                 {
@@ -125,6 +131,32 @@ def fetchOneTool(request):
         tool_ser = ToolSerializer(tool, many=False)
         if tool_ser.data:
             return Response({"data": tool_ser.data, "status": status.HTTP_200_OK})
+        else:
+            return Response(
+                {
+                    "error": "error fetching data",
+                    "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                }
+            )
+
+    else:
+        return Response(
+            {
+                "error": "no data",
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+            }
+        )
+
+
+@api_view(["GET"])
+def compareTools(request):
+    first_title = request.GET.get("first_title").capitalize()
+    second_title = request.GET.get("second_title").capitalize()
+    tools = Tool.objects.filter(Q(title=first_title) | Q(title=second_title))
+    if tools:
+        tools_ser = ToolSerializer(tools, many=True)
+        if tools_ser:
+            return Response({"data": tools_ser.data, "status": status.HTTP_200_OK})
         else:
             return Response(
                 {

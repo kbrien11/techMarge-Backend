@@ -10,4 +10,5 @@ urlpatterns = [
     path("createTool", views.createTool),
     path("fetchAllTools", views.fetchAllTools),
     path("fetchOneTool", views.fetchOneTool),
+    path("compareTools", views.compareTools),
 ]
