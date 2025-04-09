@@ -1,8 +1,6 @@
 from django.shortcuts import render
-
+from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q  # Create your views here.
-
-
 from django.contrib.auth.models import User
 import threading
 from django.contrib.auth.hashers import check_password, make_password
@@ -12,6 +10,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from .serializers import ToolSerializer, UserSerializer
 from .models import Tool
+from .utils import getGitHubData
+
+
+class ToolViewSet(ModelViewSet):
+    querySet = Tool.objects.all()
+    serializer_class = ToolSerializer
 
 
 @api_view(["POST"])
@@ -169,6 +173,28 @@ def compareTools(request):
         return Response(
             {
                 "error": "no data",
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+            }
+        )
+
+
+@api_view(["GET"])
+def searchToolData(request):
+    topic = request.GET.get("topic")
+    output = getGitHubData(topic)
+    print(output)
+    if len(output) > 0:
+        return Response(
+            {
+                "data": output,
+                "status": status.HTTP_200_OK,
+            }
+        )
+    else:
+
+        return Response(
+            {
+                "error": "error fetching data",
                 "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
             }
         )
