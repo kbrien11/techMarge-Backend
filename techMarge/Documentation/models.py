@@ -13,3 +13,13 @@ class Tool(models.Model):
     description = models.CharField(default="")
     docLink = models.CharField(default="", max_length=100)
     language = models.CharField(default="", max_length=30)
+
+
+class GitHubTools(models.Model):
+    name = models.CharField(default="", blank=True, null=True)
+    description = models.CharField(default="", blank=True, null=True)
+    language = models.CharField(default="", blank=True, null=True)
+    stargazers_count = models.IntegerField(default=0, blank=True, null=True)
+    popularity = models.CharField(default="", blank=True, null=True)
+    created_at = models.CharField(default="", blank=True, null=True)
+    homepage = models.URLField(default="", blank=True, null=True)

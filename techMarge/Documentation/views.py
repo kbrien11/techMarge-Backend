@@ -8,8 +8,8 @@ from rest_framework.views import Response
 from rest_framework.decorators import action, api_view
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-from .serializers import ToolSerializer, UserSerializer
-from .models import Tool
+from .serializers import GitHubToolsSerializer, ToolSerializer, UserSerializer
+from .models import Tool, GitHubTools
 from .utils import getGitHubData
 
 
@@ -182,11 +182,10 @@ def compareTools(request):
 def searchToolData(request):
     topic = request.GET.get("topic")
     output = getGitHubData(topic)
-    print(output)
     if len(output) > 0:
         return Response(
             {
-                "data": output,
+                "statusMessage": "Uploaded Successfully",
                 "status": status.HTTP_200_OK,
             }
         )

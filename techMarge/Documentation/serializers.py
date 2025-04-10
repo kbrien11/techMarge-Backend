@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from .models import Tool
+from .models import Tool, GitHubTools
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -33,3 +33,17 @@ class ToolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tool
         fields = ["type", "title", "description", "location", "docLink", "language"]
+
+
+class GitHubToolsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GitHubTools
+        fields = [
+            "name",
+            "description",
+            "language",
+            "stargazers_count",
+            "popularity",
+            "created_at",
+            "homepage",
+        ]
