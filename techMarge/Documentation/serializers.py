@@ -46,4 +46,7 @@ class GitHubToolsSerializer(serializers.ModelSerializer):
             "popularity",
             "created_at",
             "homepage",
+            "owner",
+            "type",
+            "location",
         ]

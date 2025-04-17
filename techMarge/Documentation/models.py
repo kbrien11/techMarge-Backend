@@ -23,3 +23,6 @@ class GitHubTools(models.Model):
     popularity = models.CharField(default="", blank=True, null=True)
     created_at = models.CharField(default="", blank=True, null=True)
     homepage = models.URLField(default="", blank=True, null=True)
+    owner = models.CharField(default="", blank=True, null=True)
+    type = models.CharField(default="", blank=True, null=True)
+    location = models.CharField(default="", blank=True, null=True)

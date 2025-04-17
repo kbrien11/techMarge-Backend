@@ -15,4 +15,6 @@ urlpatterns = [
     path("fetchOneTool", views.fetchOneTool),
     path("compareTools", views.compareTools),
     path("searchToolData", views.searchToolData),
+    path("searchSingleTool", views.searchSingleTool),
+    path("prompt_gpt", views.prompt_gpt),
 ] + router.urls

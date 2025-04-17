@@ -1,11 +1,17 @@
+import base64
+import json
 import requests
-
+from decouple import config
 from .serializers import GitHubToolsSerializer
 from .models import GitHubTools
 
-token = "api_key"
+token = config("GITHUB_API_KEY")
+GOOSE_API_KEY = config("GOOSE_API_KEY")
 
-headers = {"Authorization": f"token {token}"}
+headers = {
+    "Authorization": f"token {token}",
+    "Content-Type": "application/vnd.github+json",
+}
 
 
 def determinePopularity(count):
@@ -20,7 +26,7 @@ def determinePopularity(count):
 
 
 def getGitHubData(topic):
-    url = f"https://api.github.com/search/repositories?q=framework+language:{topic}"
+    url = f"https://api.github.com/search/repositories?q=language:{topic}&sort=stars&order=desc"
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         data = response.json()
@@ -33,13 +39,119 @@ def getGitHubData(topic):
                 popularity=determinePopularity(repo["stargazers_count"]),
                 created_at=repo["created_at"],
                 homepage=repo["homepage"],
+                owner=repo["owner"]["login"],
+                type="framework",
+                location="backend",
             )
             for repo in data["items"]
             if repo["homepage"] != None
             if len(repo["homepage"]) > 0
             if repo["description"] != None
+            if repo["name"] != "framework"
         ]
+
         GitHubTools.objects.bulk_create(sol)
         return sol
     else:
         print("error")
+
+
+def getToolData(topic):
+    url = f"https://api.github.com/search/topics"
+    params = {"q": f"{topic}"}
+    local_headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/vnd.github.mercy-preview+json",
+    }
+    response = requests.get(url, headers=local_headers, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        for tool in data.get("items"):
+            print(tool)
+            if tool.get("name").lower() == topic.lower():
+                return tool
+
+    else:
+        print("error")
+
+
+def getReadMeContents(owner, repo):
+    url = f"https://api.github.com/repos/{owner}/{repo}/readme"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        content = base64.b64decode(data["content"]).decode("utf-8")
+        print(content)
+        return content
+    else:
+        return "error"
+
+
+def call_gpt(prompt):
+
+    api_url = "https://openrouter.ai/api/v1/completions"
+    # test = "https://api.goose.ai/v1/engines"
+    local_headers = {
+        "Authorization": f"Bearer {GOOSE_API_KEY}",
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "model": "google/gemini-2.0-flash-001",
+        "prompt": prompt,
+        "max_tokens": 100,
+        "temperature": 0.3,
+        "top_p": 0.5,
+    }
+    print(json.dumps(payload))
+
+    response = requests.post(api_url, headers=local_headers, json=payload)
+    print(response.text)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("choices", [{}])[0].get("text", "").strip()
+
+    if response.status_code == 400:
+        print(response.text)
+        data = response.json()
+        print(data)
+    if response.status_code == 401:
+        data = response.json()
+        print(data)
+    if response.status_code == 429:
+        data = response.json()
+        print(data)
+
+    else:
+        return "error"
+
+
+# def productHuntData():
+#     urk = "https://api.producthunt.com/v2/api/graphql"
+#     local_headers = {
+#         "Accept": "application/json",
+#         "Content-Type": "application/json",
+#         "Authorization": "Bearer " + api_token_ph,
+#         "Host": "api.producthunt.com",
+#     }
+#     query = """
+#     {
+#     posts(search:Javascript framework) {
+#                 edges {
+#                     node{
+#                         name
+#                         tagline
+#                         votesCount
+#                         website
+#                     }
+#                 }
+#                 }
+#                 }
+
+#     """
+
+#     response = requests.post(urk, json={"query": query}, headers=local_headers)
+#     print(response)
+#     if response.status_code == 200:
+#         print(response.json())
+#         return response.json()

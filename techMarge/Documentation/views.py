@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from .serializers import GitHubToolsSerializer, ToolSerializer, UserSerializer
 from .models import Tool, GitHubTools
-from .utils import getGitHubData
+from .utils import getGitHubData, getToolData, call_gpt
 
 
 class ToolViewSet(ModelViewSet):
@@ -99,9 +99,9 @@ def createTool(request):
 
 @api_view(["GET"])
 def fetchAllTools(request):
-    tools = Tool.objects.all()
+    tools = GitHubTools.objects.all()
     if len(tools) > 0:
-        tools_ser = ToolSerializer(tools, many=True)
+        tools_ser = GitHubToolsSerializer(tools, many=True)
         if tools_ser.data:
             return Response(
                 {
@@ -195,5 +195,77 @@ def searchToolData(request):
             {
                 "error": "error fetching data",
                 "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+            }
+        )
+
+
+@api_view(["GET"])
+def searchSingleTool(request):
+    topic = request.GET.get("topic")
+    output = getToolData(topic)
+    print(output)
+    if output.get("description") is not None:
+        if len(output) > 0:
+            tool = GitHubTools.objects.filter(
+                name__icontains=output.get("name").capitalize()
+            ).first()
+            if "Node" in output.get("description"):
+                tool.location = "backend"
+            if "library" in output.get("description"):
+                tool.type = "library"
+            tool.description = output.get("description")
+            tool.save()
+
+            # tool_ser = GitHubToolsSerializer(instance=tool, data=tool, many=False)
+
+            # if tool_ser.is_valid():
+            #     print(tool_ser)
+            #     print(tool_ser["description"])
+
+            #     tool_ser.save(description=output.get("description"))
+
+            return Response(
+                {
+                    "statusMessage": "Uploaded Successfully",
+                    "status": status.HTTP_200_OK,
+                    "data": output,
+                }
+            )
+        else:
+
+            return Response(
+                {
+                    "error": "error fetching data",
+                    "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                }
+            )
+    else:
+        return Response(
+            {
+                "error": "Nothing to update",
+                "status": status.HTTP_204_NO_CONTENT,
+            }
+        )
+
+
+@api_view(["POST"])
+def prompt_gpt(request):
+    prompt = request.data.get("prompt")
+    print(prompt)
+    output = call_gpt(prompt)
+
+    if output:
+        return Response(
+            {
+                "statusMessage": "Uploaded Successfully",
+                "status": status.HTTP_200_OK,
+                "data": output,
+            }
+        )
+    else:
+        return Response(
+            {
+                "error": "Nothing to update",
+                "status": status.HTTP_204_NO_CONTENT,
             }
         )
