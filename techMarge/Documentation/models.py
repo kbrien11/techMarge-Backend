@@ -26,3 +26,8 @@ class GitHubTools(models.Model):
     owner = models.CharField(default="", blank=True, null=True)
     type = models.CharField(default="", blank=True, null=True)
     location = models.CharField(default="", blank=True, null=True)
+
+
+class Favorite(models.Model):
+    user_pk = models.ForeignKey(User, on_delete=models.CASCADE, default="")
+    name = models.CharField(default="", blank=True, null=True)

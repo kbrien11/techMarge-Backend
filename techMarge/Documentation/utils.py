@@ -99,7 +99,7 @@ def call_gpt(prompt):
     payload = {
         "model": "google/gemini-2.0-flash-001",
         "prompt": prompt,
-        "max_tokens": 100,
+        "max_tokens": 400,
         "temperature": 0.3,
         "top_p": 0.5,
     }

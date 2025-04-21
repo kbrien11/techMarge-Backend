@@ -8,8 +8,13 @@ from rest_framework.views import Response
 from rest_framework.decorators import action, api_view
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-from .serializers import GitHubToolsSerializer, ToolSerializer, UserSerializer
-from .models import Tool, GitHubTools
+from .serializers import (
+    GitHubToolsSerializer,
+    ToolSerializer,
+    UserSerializer,
+    FavoriteSerializer,
+)
+from .models import Favorite, Tool, GitHubTools
 from .utils import getGitHubData, getToolData, call_gpt
 
 
@@ -215,15 +220,6 @@ def searchSingleTool(request):
                 tool.type = "library"
             tool.description = output.get("description")
             tool.save()
-
-            # tool_ser = GitHubToolsSerializer(instance=tool, data=tool, many=False)
-
-            # if tool_ser.is_valid():
-            #     print(tool_ser)
-            #     print(tool_ser["description"])
-
-            #     tool_ser.save(description=output.get("description"))
-
             return Response(
                 {
                     "statusMessage": "Uploaded Successfully",
@@ -267,5 +263,65 @@ def prompt_gpt(request):
             {
                 "error": "Nothing to update",
                 "status": status.HTTP_204_NO_CONTENT,
+            }
+        )
+
+
+@api_view(["POST"])
+def addToFavorites(request):
+    tool = request.data.get("tool")
+    token = request.data.get("token")
+    user_token = Token.objects.get(key=token)
+    user_id = user_token.user.id
+    if user_id:
+        user_obj = User.objects.filter(id=user_id).first()
+        favorite = Favorite(user_pk=user_obj, name=tool)
+        if favorite:
+            favorite.save()
+            return Response(
+                {
+                    "statusMessage": "Added to favorites",
+                    "status": status.HTTP_200_OK,
+                }
+            )
+    else:
+        return Response(
+            {"error": "Invalid Token", "status": status.HTTP_500_INTERNAL_SERVER_ERROR}
+        )
+        # if tool:
+        #     favorite = Favorite(
+        #         user_pk =
+        #     )
+
+
+@api_view(["GET"])
+def fetchAllFavorites(request):
+    token = request.data.get("token")
+    user_token = Token.objects.get(key=token)
+    user_id = user_token.user.id
+    if user_id:
+        user = User.objects.filter(id=user_id).first()
+        favoriteTools = Favorite.objects.filter(user_pk=user).all()
+        favoriteTools_ser = FavoriteSerializer(favoriteTools, many=True)
+        if len(favoriteTools_ser.data) > 0:
+            return Response(
+                {
+                    "data": favoriteTools_ser.data,
+                    "status": status.HTTP_200_OK,
+                    "total_count": len(favoriteTools_ser.data),
+                }
+            )
+        else:
+            return Response(
+                {
+                    "statusMessage": "no tools found",
+                    "status": status.HTTP_200_OK,
+                }
+            )
+    else:
+        return Response(
+            {
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "statusMessage": "User doesnt exit",
             }
         )
