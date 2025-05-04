@@ -135,9 +135,9 @@ def fetchAllTools(request):
 def fetchOneTool(request):
     title = request.GET.get("title").capitalize()
     print(title)
-    tool = Tool.objects.filter(title=title).first()
+    tool = GitHubTools.objects.filter(name=title).first()
     if tool:
-        tool_ser = ToolSerializer(tool, many=False)
+        tool_ser = GitHubToolsSerializer(tool, many=False)
         if tool_ser.data:
             return Response({"data": tool_ser.data, "status": status.HTTP_200_OK})
         else:
@@ -323,5 +323,61 @@ def fetchAllFavorites(request):
             {
                 "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "statusMessage": "User doesnt exit",
+            }
+        )
+
+
+@api_view(["GET"])
+def filterData(request):
+    filters = request.data.get("filters")
+
+    filter_kwargs = {}
+
+    # 3. Iterate through the search parameters and build the filter dictionary
+
+    if filters:  # Only add the filter if the value is not empty
+        if "name" in filters:
+            filter_kwargs["name"] = filters["name"]
+        if "language" in filters:
+            filter_kwargs["language"] = filters["language"]
+        if "stargazers_count" in filters:
+            filter_kwargs["stargazers_count"] = filters["stargazers_count"]
+        if "created_at" in filters:
+            filter_kwargs["created_at"] = filters["created_at"]
+        if "type" in filters:
+            filter_kwargs["type"] = filters["type"]
+        if "location" in filters:
+            filter_kwargs["location"] = filters["location"]
+        if "popularity" in filters:
+            filter_kwargs["popularity"] = filters["popularity"]
+
+    query = Q()
+    for key, value in filter_kwargs.items():
+        query |= Q(**{key: value})
+    filtered_tools = GitHubTools.objects.filter(query)
+    print(filtered_tools)
+    if filtered_tools:
+        tool_ser = GitHubToolsSerializer(filtered_tools, many=True)
+        if tool_ser.data:
+            return Response(
+                {
+                    "data": tool_ser.data,
+                    "status": status.HTTP_200_OK,
+                    "count": len(filtered_tools),
+                }
+            )
+        else:
+            return Response(
+                {
+                    "error": "error fetching data",
+                    "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                }
+            )
+
+    else:
+        return Response(
+            {
+                "statusMessage": "Filtering critirea not matched, please update your filters/search critera",
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
             }
         )

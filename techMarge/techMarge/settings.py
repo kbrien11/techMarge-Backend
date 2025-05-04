@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+import firebase_admin
+from firebase_admin import credentials
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-)8qkw$*u!!3-!3f)27i@r(bt4*_klgvhvb%qspxglx=9if_+7c"
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -130,3 +134,20 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# myapp/firebase_admin_init.py (or wherever you want to put it)
+
+
+def initialize_firebase():
+    try:
+        cred = credentials.Certificate(
+            "/Users/keith_brien/Downloads/techmerge-faba5-firebase-adminsdk-fbsvc-a934ccf7f3.json"
+        )  # Replace with the actual path
+        firebase_admin.initialize_app(cred)
+        print("Firebase Admin SDK initialized successfully")
+    except Exception as e:
+        print(f"Error initializing Firebase Admin SDK: {e}")
+
+
+# You'll call this function during Django startup (see next step)

@@ -4,6 +4,9 @@ import requests
 from decouple import config
 from .serializers import GitHubToolsSerializer
 from .models import GitHubTools
+import firebase_admin
+from firebase_admin import messaging
+
 
 token = config("GITHUB_API_KEY")
 GOOSE_API_KEY = config("GOOSE_API_KEY")
@@ -126,32 +129,4 @@ def call_gpt(prompt):
         return "error"
 
 
-# def productHuntData():
-#     urk = "https://api.producthunt.com/v2/api/graphql"
-#     local_headers = {
-#         "Accept": "application/json",
-#         "Content-Type": "application/json",
-#         "Authorization": "Bearer " + api_token_ph,
-#         "Host": "api.producthunt.com",
-#     }
-#     query = """
-#     {
-#     posts(search:Javascript framework) {
-#                 edges {
-#                     node{
-#                         name
-#                         tagline
-#                         votesCount
-#                         website
-#                     }
-#                 }
-#                 }
-#                 }
-
-#     """
-
-#     response = requests.post(urk, json={"query": query}, headers=local_headers)
-#     print(response)
-#     if response.status_code == 200:
-#         print(response.json())
-#         return response.json()
+# myapp/utils.py (or wherever you keep your utility functions)

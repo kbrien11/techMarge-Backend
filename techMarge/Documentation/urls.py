@@ -19,4 +19,5 @@ urlpatterns = [
     path("prompt_gpt", views.prompt_gpt),
     path("addToFavorites", views.addToFavorites),
     path("fetchAllFavorites", views.fetchAllFavorites),
+    path("filterData", views.filterData),
 ] + router.urls
