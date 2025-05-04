@@ -139,15 +139,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # myapp/firebase_admin_init.py (or wherever you want to put it)
 
 
-def initialize_firebase():
-    try:
-        cred = credentials.Certificate(
-            "/Users/keith_brien/Downloads/techmerge-faba5-firebase-adminsdk-fbsvc-a934ccf7f3.json"
-        )  # Replace with the actual path
-        firebase_admin.initialize_app(cred)
-        print("Firebase Admin SDK initialized successfully")
-    except Exception as e:
-        print(f"Error initializing Firebase Admin SDK: {e}")
-
-
 # You'll call this function during Django startup (see next step)

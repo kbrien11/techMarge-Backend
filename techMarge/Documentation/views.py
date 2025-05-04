@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q  # Create your views here.
@@ -8,14 +9,17 @@ from rest_framework.views import Response
 from rest_framework.decorators import action, api_view
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+
 from .serializers import (
     GitHubToolsSerializer,
     ToolSerializer,
     UserSerializer,
     FavoriteSerializer,
+    PaginatorSerializer,
 )
 from .models import Favorite, Tool, GitHubTools
 from .utils import getGitHubData, getToolData, call_gpt
+from django.core.paginator import Paginator
 
 
 class ToolViewSet(ModelViewSet):
@@ -105,14 +109,32 @@ def createTool(request):
 @api_view(["GET"])
 def fetchAllTools(request):
     tools = GitHubTools.objects.all()
+    page_size = int(request.GET.get("page_size"))
+    paginator = Paginator(tools, page_size)
+    page_number = request.GET.get("page_number")
+    page_obj = paginator.get_page(page_number)
+    obj = {
+        "total_items": paginator.count,
+        "total_pages": paginator.num_pages,
+        "current_page": page_obj.number,
+        "has_next": page_obj.has_next(),
+        "has_previous": page_obj.has_previous,
+    }
+    json_obj = PaginatorSerializer(obj, many=False)
+    print(json_obj)
     if len(tools) > 0:
-        tools_ser = GitHubToolsSerializer(tools, many=True)
+        tools_ser = GitHubToolsSerializer(page_obj, many=True)
+
         if tools_ser.data:
             return Response(
                 {
-                    "data": tools_ser.data,
                     "status": status.HTTP_200_OK,
                     "total_count": len(tools_ser.data),
+                    # "previous": paginator_ser.data
+                    # "current_page": page_obj.number,
+                    # "has_next": page_obj.has_next,
+                    "paginator": json_obj.data,
+                    "data": tools_ser.data,
                 }
             )
         else:
@@ -187,6 +209,7 @@ def compareTools(request):
 def searchToolData(request):
     topic = request.GET.get("topic")
     output = getGitHubData(topic)
+
     if len(output) > 0:
         return Response(
             {

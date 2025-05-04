@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from .models import Tool, GitHubTools, Favorite
+from .models import CustomPaginator, Tool, GitHubTools, Favorite
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -56,3 +56,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = ["name", "user_pk"]
+
+
+class PaginatorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomPaginator
+        fields = [
+            "total_items",
+            "total_pages",
+            "current_page",
+            "has_next",
+            "has_previous",
+        ]

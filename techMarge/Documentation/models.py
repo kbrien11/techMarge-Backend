@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 
 
 User._meta.get_field("email")._unique = True
@@ -31,3 +32,11 @@ class GitHubTools(models.Model):
 class Favorite(models.Model):
     user_pk = models.ForeignKey(User, on_delete=models.CASCADE, default="")
     name = models.CharField(default="", blank=True, null=True)
+
+
+class CustomPaginator(models.Model):
+    total_items = models.IntegerField(default="", blank=True, null=True)
+    total_pages = models.IntegerField(default="", blank=True, null=True)
+    current_page = models.IntegerField(default="", blank=True, null=True)
+    has_next = models.BooleanField(default="", blank=True, null=True)
+    has_previous = models.BooleanField(default="", blank=True, null=True)
