@@ -129,11 +129,12 @@ def fetchAllTools(request):
             return Response(
                 {
                     "status": status.HTTP_200_OK,
-                    "total_count": len(tools_ser.data),
-                    # "previous": paginator_ser.data
-                    # "current_page": page_obj.number,
-                    # "has_next": page_obj.has_next,
-                    "paginator": json_obj.data,
+                    "page_size": page_size,
+                    "total_items": json_obj.data.get("total_items"),
+                    "total_pages": json_obj.data.get("total_pages"),
+                    "current_page": json_obj.data.get("current_page"),
+                    "has_next": json_obj.data.get("has_next"),
+                    "has_previous": json_obj.data.get("has_previous"),
                     "data": tools_ser.data,
                 }
             )
